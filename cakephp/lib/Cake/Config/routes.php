@@ -84,3 +84,5 @@ if ($namedConfig['rules'] === false) {
 
 unset($namedConfig, $params, $indexParams, $prefix, $prefixes, $shortParams, $match,
 	$pluginPattern, $plugins, $key, $value);
+	
+Router::parseExtensions('json');
