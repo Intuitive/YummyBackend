@@ -15,8 +15,12 @@ class VendorsController extends AppController {
  */
 	public function index() {
 		$this->layout = false;
-		$this->set('users', $this->paginate());
-        $this->set('_serialize', array('users'));
+		$data = array(
+			'data' => $this->paginate(),
+			'success' => 'true',
+			'code' => '200'
+		);
+		$this->set('data', $data);
 	}
 
 /**

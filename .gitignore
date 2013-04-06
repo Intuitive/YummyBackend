@@ -1,0 +1,3 @@
+cakephp/tmp/cache/*
+cakephp/app/tmp/cache/*
+cakephp/lib/Cake/Console/Templates/skel/tmp/cache/*

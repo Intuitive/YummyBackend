@@ -30,7 +30,7 @@ class Vendor extends AppModel {
  * Validation rules
  *
  * @var array
- */
+ *//*
 	public $validate = array(
 		'id' => array(
 			'notempty' => array(
