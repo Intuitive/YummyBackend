@@ -1,3 +1,3 @@
 cakephp/tmp/cache/*
-cakephp/app/tmp/cache/*
+cakephp/app/tmp/logs/*
 cakephp/lib/Cake/Console/Templates/skel/tmp/cache/*
