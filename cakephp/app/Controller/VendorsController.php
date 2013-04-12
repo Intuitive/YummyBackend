@@ -14,9 +14,10 @@ class VendorsController extends AppController {
  * @return void
  */
 	public function index() {
+		$this->Vendor->recursive = -1;
 		$this->layout = false;
 		$data = array(
-			'data' => $this->paginate(),
+			'data' => $this->Vendor->find('all'),
 			'success' => 'true',
 			'code' => '200'
 		);
