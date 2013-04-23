@@ -16,9 +16,13 @@ class VendorsController extends AppController {
 	public function index() {
 		$this->Vendor->recursive = -1;
 		$this->layout = false;
+		
+		$vendors = $this->Vendor->find('all');
+		
 		$data = array(
-			'data' => $this->Vendor->find('all'),
 			'success' => 'true',
+			'data' => $vendors,
+			'count' => count($vendors),
 			'code' => '200'
 		);
 		$this->set('data', $data);
@@ -32,11 +36,27 @@ class VendorsController extends AppController {
  * @return void
  */
 	public function view($id = null) {
+		$this->Vendor->recursive = -1;
+		$this->layout = false;
+		$status = 200;
+		
+		// check if vendor exists
 		if (!$this->Vendor->exists($id)) {
-			throw new NotFoundException(__('Invalid vendor'));
+			$status = 404;
 		}
+		
+		// find by Id
 		$options = array('conditions' => array('Vendor.' . $this->Vendor->primaryKey => $id));
-		$this->set('vendor', $this->Vendor->find('first', $options));
+		
+		
+		$data = array(
+			'success' => 'true',
+			'data' => $this->Vendor->find('first', $options),
+			'count' => 1,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -64,20 +84,36 @@ class VendorsController extends AppController {
  * @return void
  */
 	public function edit($id = null) {
-		if (!$this->Vendor->exists($id)) {
-			throw new NotFoundException(__('Invalid vendor'));
-		}
-		if ($this->request->is('post') || $this->request->is('put')) {
-			if ($this->Vendor->save($this->request->data)) {
-				$this->Session->setFlash(__('The vendor has been saved'));
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(__('The vendor could not be saved. Please, try again.'));
+		if (! ($this->request->is('post') || $this->request->is('put')) )
+			throw new NotFoundException();
+		
+		$this->Vendor->recursive = -1;
+		$this->layout = false;
+		
+		$saved_data = null;
+		$status = 200;
+		$success = 'true';
+		
+		// 	check if vendor exists
+		if (!array_key_exists('id', $this->request->data) || !$this->Vendor->exists($id)) {
+			$status = 404;
+			$success = 'false';
+		}else{
+			// save the vendor
+			if ($this->request->is('post') || $this->request->is('put')) {
+				$saved_data = $this->Vendor->save($this->request->data);
 			}
-		} else {
-			$options = array('conditions' => array('Vendor.' . $this->Vendor->primaryKey => $id));
-			$this->request->data = $this->Vendor->find('first', $options);
 		}
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status,
+			'data' => $saved_data,
+			'count' => count($saved_data)
+		);
+		
+		$this->set('data', $data);
+		
 	}
 
 /**
