@@ -65,15 +65,27 @@ class VendorsController extends AppController {
  * @return void
  */
 	public function add() {
-		if ($this->request->is('post')) {
+		$this->Vendor->recursive = -1;
+		$this->layout = false;
+		
+		$status = 200;
+		$success = 'true';
+		
+		
+		if  ($this->request->is('post')) {
 			$this->Vendor->create();
-			if ($this->Vendor->save($this->request->data)) {
-				$this->Session->setFlash(__('The vendor has been saved'));
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(__('The vendor could not be saved. Please, try again.'));
+			if (!$this->Vendor->save($this->request->data)) {
+				$status = 500;
+				$success = 'false';
 			}
 		}
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -83,12 +95,13 @@ class VendorsController extends AppController {
  * @param string $id
  * @return void
  */
-	public function edit($id = null) {
-		if (! ($this->request->is('post') || $this->request->is('put')) )
-			throw new NotFoundException();
-		
+	public function edit($id = null) {	
 		$this->Vendor->recursive = -1;
 		$this->layout = false;
+			
+		if (! ($this->request->is('post') || $this->request->is('put')) )
+			throw new NotFoundException();
+				
 		
 		$saved_data = null;
 		$status = 200;
@@ -113,7 +126,6 @@ class VendorsController extends AppController {
 		);
 		
 		$this->set('data', $data);
-		
 	}
 
 /**
@@ -125,16 +137,29 @@ class VendorsController extends AppController {
  * @return void
  */
 	public function delete($id = null) {
+		$this->Vendor->recursive = -1;
+		$this->layout = false;	
+			
 		$this->Vendor->id = $id;
+		$status = 200;
+		$success = 'true';
+		
 		if (!$this->Vendor->exists()) {
-			throw new NotFoundException(__('Invalid vendor'));
+			$status = 404;
+			$success = 'false';
 		}
+		
 		$this->request->onlyAllow('post', 'delete');
-		if ($this->Vendor->delete()) {
-			$this->Session->setFlash(__('Vendor deleted'));
-			$this->redirect(array('action' => 'index'));
+		if (!$this->Vendor->delete()) {
+			$status = 500;
+			$success = 'false';
 		}
-		$this->Session->setFlash(__('Vendor was not deleted'));
-		$this->redirect(array('action' => 'index'));
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 }
