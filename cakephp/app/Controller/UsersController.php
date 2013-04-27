@@ -47,7 +47,7 @@ class UsersController extends AppController {
 		}
 		
 		// find by Id
-		$options = array('conditions' => array('Vendor.' . $this->User->primaryKey => $id));
+		$options = array('conditions' => array('User.' . $this->User->primaryKey => $id));
 		
 		
 		$data = array(
@@ -108,12 +108,12 @@ class UsersController extends AppController {
 		$status = 200;
 		$success = 'true';
 		
-		// 	check if vendor exists
+		// 	check if user exists
 		if (!array_key_exists('id', $this->request->data) || !$this->User->exists($id)) {
 			$status = 404;
 			$success = 'false';
 		}else{
-			// save the vendor
+			// save the user
 			if ($this->request->is('post') || $this->request->is('put')) {
 				$saved_data = $this->User->save($this->request->data);
 			}
@@ -151,7 +151,7 @@ class UsersController extends AppController {
 		}
 		
 		$this->request->onlyAllow('post', 'delete');
-		if (!$this->Vendor->delete()) {
+		if (!$this->User->delete()) {
 			$status = 500;
 			$success = 'false';
 		}

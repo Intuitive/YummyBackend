@@ -13,8 +13,18 @@ class OrdersController extends AppController {
  * @return void
  */
 	public function index() {
-		$this->Order->recursive = 0;
-		$this->set('orders', $this->paginate());
+		$this->Order->recursive = -1;
+		$this->layout = false;
+		
+		$orders = $this->Order->find('all');
+		
+		$data = array(
+			'success' => 'true',
+			'data' => $orders ,
+			'count' => count($orders ),
+			'code' => '200'
+		);
+		$this->set('data', $data);
 	}
 
 /**
@@ -25,11 +35,27 @@ class OrdersController extends AppController {
  * @return void
  */
 	public function view($id = null) {
+		$this->Order->recursive = -1;
+		$this->layout = false;
+		$status = 200;
+		
+		// check if order exists
 		if (!$this->Order->exists($id)) {
-			throw new NotFoundException(__('Invalid order'));
+			$status = 404;
 		}
+		
+		// find by Id
 		$options = array('conditions' => array('Order.' . $this->Order->primaryKey => $id));
-		$this->set('order', $this->Order->find('first', $options));
+		
+		
+		$data = array(
+			'success' => 'true',
+			'data' => $this->Order->find('first', $options),
+			'count' => 1,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -38,16 +64,27 @@ class OrdersController extends AppController {
  * @return void
  */
 	public function add() {
-		if ($this->request->is('post')) {
+		$this->Order->recursive = -1;
+		$this->layout = false;
+		
+		$status = 200;
+		$success = 'true';
+		
+		
+		if  ($this->request->is('post')) {
 			$this->Order->create();
-			if ($this->Order->save($this->request->data)) {
-				$this->flash(__('Order saved.'), array('action' => 'index'));
-			} else {
+			if (!$this->Order->save($this->request->data)) {
+				$status = 500;
+				$success = 'false';
 			}
 		}
-		$users = $this->Order->User->find('list');
-		$vendors = $this->Order->Vendor->find('list');
-		$this->set(compact('users', 'vendors'));
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -58,21 +95,36 @@ class OrdersController extends AppController {
  * @return void
  */
 	public function edit($id = null) {
-		if (!$this->Order->exists($id)) {
-			throw new NotFoundException(__('Invalid order'));
-		}
-		if ($this->request->is('post') || $this->request->is('put')) {
-			if ($this->Order->save($this->request->data)) {
-				$this->flash(__('The order has been saved.'), array('action' => 'index'));
-			} else {
+		$this->Order->recursive = -1;
+		$this->layout = false;
+			
+		if (! ($this->request->is('post') || $this->request->is('put')) )
+			throw new NotFoundException();
+				
+		
+		$saved_data = null;
+		$status = 200;
+		$success = 'true';
+		
+		// 	check if order exists
+		if (!array_key_exists('id', $this->request->data) || !$this->Order->exists($id)) {
+			$status = 404;
+			$success = 'false';
+		}else{
+			// save the order
+			if ($this->request->is('post') || $this->request->is('put')) {
+				$saved_data = $this->Order->save($this->request->data);
 			}
-		} else {
-			$options = array('conditions' => array('Order.' . $this->Order->primaryKey => $id));
-			$this->request->data = $this->Order->find('first', $options);
 		}
-		$users = $this->Order->User->find('list');
-		$vendors = $this->Order->Vendor->find('list');
-		$this->set(compact('users', 'vendors'));
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status,
+			'data' => $saved_data,
+			'count' => count($saved_data)
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -84,15 +136,29 @@ class OrdersController extends AppController {
  * @return void
  */
 	public function delete($id = null) {
+		$this->Order->recursive = -1;
+		$this->layout = false;	
+			
 		$this->Order->id = $id;
+		$status = 200;
+		$success = 'true';
+		
 		if (!$this->Order->exists()) {
-			throw new NotFoundException(__('Invalid order'));
+			$status = 404;
+			$success = 'false';
 		}
+		
 		$this->request->onlyAllow('post', 'delete');
-		if ($this->Order->delete()) {
-			$this->flash(__('Order deleted'), array('action' => 'index'));
+		if (!$this->Order->delete()) {
+			$status = 500;
+			$success = 'false';
 		}
-		$this->flash(__('Order was not deleted'), array('action' => 'index'));
-		$this->redirect(array('action' => 'index'));
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 }
