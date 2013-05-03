@@ -8,16 +8,24 @@ App::uses('AppController', 'Controller');
 class MenuItemsController extends AppController {
 
 /**
- * index method
+ * Gets all MenuItems or all MenuItems by Vendor id
  *
  * @return void
  */
-	public function index() {
+	public function index($vendorId = null) {
 		$this->MenuItem->recursive = -1;
 		$this->layout = false;
+		$menuItems;
 		
-		$menuItems = $this->MenuItem->find('all');
-		
+		// get all MenuItems
+		if($vendorId == null)
+			$menuItems = $this->MenuItem->find('all');
+		// get MenuItems by Vendor id
+		else
+			$menuItems = $this->MenuItem->find('all', array(
+		        'conditions' => array('MenuItem.vendor_id =' => $vendorId)
+		    ));
+			
 		$data = array(
 			'success' => 'true',
 			'data' => $menuItems,

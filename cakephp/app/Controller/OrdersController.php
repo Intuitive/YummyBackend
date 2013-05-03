@@ -70,6 +70,12 @@ class OrdersController extends AppController {
 		$status = 200;
 		$success = 'true';
 		
+		// $this->Order->set($this->request->data);
+		// if($this->Order->validates())
+		// {
+			// echo "validation failed";
+			// return;
+		// }
 		
 		if  ($this->request->is('post')) {
 			$this->Order->create();
