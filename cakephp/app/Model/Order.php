@@ -21,6 +21,7 @@ class Order extends AppModel {
  *
  * @var array
  */
+ /*
 	public $validate = array(
 		'id' => array(
 			'naturalnumber' => array(
@@ -62,26 +63,6 @@ class Order extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		'tax' => array(
-			'money' => array(
-				'rule' => array('money'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
-		'discount' => array(
-			'money' => array(
-				'rule' => array('money'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
 		'total_price' => array(
 			'money' => array(
 				'rule' => array('money'),
@@ -103,7 +84,7 @@ class Order extends AppModel {
 			),
 		),
 	);
-
+*/
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
 
 /**

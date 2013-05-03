@@ -15,9 +15,18 @@ class UsersController extends AppController {
  * @return void
  */
 	public function index() {
+		$this->User->recursive = -1;
 		$this->layout = false;
-		$this->set('users', $this->paginate());
-        $this->set('_serialize', array('users'));
+		
+		$users = $this->User->find('all');
+		
+		$data = array(
+			'success' => 'true',
+			'data' => $users,
+			'count' => count($users),
+			'code' => '200'
+		);
+		$this->set('data', $data);
 	}
 
 /**
@@ -28,11 +37,27 @@ class UsersController extends AppController {
  * @return void
  */
 	public function view($id = null) {
+		$this->User->recursive = -1;
+		$this->layout = false;
+		$status = 200;
+		
+		// check if user exists
 		if (!$this->User->exists($id)) {
-			throw new NotFoundException(__('Invalid user'));
+			$status = 404;
 		}
+		
+		// find by Id
 		$options = array('conditions' => array('User.' . $this->User->primaryKey => $id));
-		$this->set('user', $this->User->find('first', $options));
+		
+		
+		$data = array(
+			'success' => 'true',
+			'data' => $this->User->find('first', $options),
+			'count' => 1,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -41,17 +66,27 @@ class UsersController extends AppController {
  * @return void
  */
 	public function add() {
-		if ($this->request->is('post')) {
+		$this->User->recursive = -1;
+		$this->layout = false;
+		
+		$status = 200;
+		$success = 'true';
+		
+		
+		if  ($this->request->is('post')) {
 			$this->User->create();
-			if ($this->User->save($this->request->data)) {
-				$this->Session->setFlash(__('The user has been saved'));
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(__('The user could not be saved. Please, try again.'));
+			if (!$this->User->save($this->request->data)) {
+				$status = 500;
+				$success = 'false';
 			}
 		}
-		$vendors = $this->User->Vendor->find('list');
-		$this->set(compact('vendors'));
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -62,22 +97,36 @@ class UsersController extends AppController {
  * @return void
  */
 	public function edit($id = null) {
-		if (!$this->User->exists($id)) {
-			throw new NotFoundException(__('Invalid user'));
-		}
-		if ($this->request->is('post') || $this->request->is('put')) {
-			if ($this->User->save($this->request->data)) {
-				$this->Session->setFlash(__('The user has been saved'));
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(__('The user could not be saved. Please, try again.'));
+		$this->User->recursive = -1;
+		$this->layout = false;
+			
+		if (! ($this->request->is('post') || $this->request->is('put')) )
+			throw new NotFoundException();
+				
+		
+		$saved_data = null;
+		$status = 200;
+		$success = 'true';
+		
+		// 	check if user exists
+		if (!array_key_exists('id', $this->request->data) || !$this->User->exists($id)) {
+			$status = 404;
+			$success = 'false';
+		}else{
+			// save the user
+			if ($this->request->is('post') || $this->request->is('put')) {
+				$saved_data = $this->User->save($this->request->data);
 			}
-		} else {
-			$options = array('conditions' => array('User.' . $this->User->primaryKey => $id));
-			$this->request->data = $this->User->find('first', $options);
 		}
-		$vendors = $this->User->Vendor->find('list');
-		$this->set(compact('vendors'));
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status,
+			'data' => $saved_data,
+			'count' => count($saved_data)
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -89,16 +138,29 @@ class UsersController extends AppController {
  * @return void
  */
 	public function delete($id = null) {
+		$this->User->recursive = -1;
+		$this->layout = false;	
+			
 		$this->User->id = $id;
+		$status = 200;
+		$success = 'true';
+		
 		if (!$this->User->exists()) {
-			throw new NotFoundException(__('Invalid user'));
+			$status = 404;
+			$success = 'false';
 		}
+		
 		$this->request->onlyAllow('post', 'delete');
-		if ($this->User->delete()) {
-			$this->Session->setFlash(__('User deleted'));
-			$this->redirect(array('action' => 'index'));
+		if (!$this->User->delete()) {
+			$status = 500;
+			$success = 'false';
 		}
-		$this->Session->setFlash(__('User was not deleted'));
-		$this->redirect(array('action' => 'index'));
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 }

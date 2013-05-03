@@ -7,14 +7,25 @@ App::uses('AppController', 'Controller');
  */
 class VendorReviewsController extends AppController {
 
+
 /**
  * index method
  *
  * @return void
  */
 	public function index() {
-		$this->VendorReview->recursive = 0;
-		$this->set('vendorReviews', $this->paginate());
+		$this->VendorReview->recursive = -1;
+		$this->layout = false;
+		
+		$vendorReviews = $this->VendorReview->find('all');
+		
+		$data = array(
+			'success' => 'true',
+			'data' => $vendorReviews,
+			'count' => count($vendorReviews),
+			'code' => '200'
+		);
+		$this->set('data', $data);
 	}
 
 /**
@@ -25,11 +36,27 @@ class VendorReviewsController extends AppController {
  * @return void
  */
 	public function view($id = null) {
+		$this->VendorReview->recursive = -1;
+		$this->layout = false;
+		$status = 200;
+		
+		// check if vendor exists
 		if (!$this->VendorReview->exists($id)) {
-			throw new NotFoundException(__('Invalid vendor review'));
+			$status = 404;
 		}
+		
+		// find by Id
 		$options = array('conditions' => array('VendorReview.' . $this->VendorReview->primaryKey => $id));
-		$this->set('vendorReview', $this->VendorReview->find('first', $options));
+		
+		
+		$data = array(
+			'success' => 'true',
+			'data' => $this->VendorReview->find('first', $options),
+			'count' => 1,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -38,16 +65,27 @@ class VendorReviewsController extends AppController {
  * @return void
  */
 	public function add() {
-		if ($this->request->is('post')) {
+		$this->VendorReview->recursive = -1;
+		$this->layout = false;
+		
+		$status = 200;
+		$success = 'true';
+		
+		
+		if  ($this->request->is('post')) {
 			$this->VendorReview->create();
-			if ($this->VendorReview->save($this->request->data)) {
-				$this->flash(__('Vendorreview saved.'), array('action' => 'index'));
-			} else {
+			if (!$this->VendorReview->save($this->request->data)) {
+				$status = 500;
+				$success = 'false';
 			}
 		}
-		$users = $this->VendorReview->User->find('list');
-		$vendors = $this->VendorReview->Vendor->find('list');
-		$this->set(compact('users', 'vendors'));
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -57,22 +95,37 @@ class VendorReviewsController extends AppController {
  * @param string $id
  * @return void
  */
-	public function edit($id = null) {
-		if (!$this->VendorReview->exists($id)) {
-			throw new NotFoundException(__('Invalid vendor review'));
-		}
-		if ($this->request->is('post') || $this->request->is('put')) {
-			if ($this->VendorReview->save($this->request->data)) {
-				$this->flash(__('The vendor review has been saved.'), array('action' => 'index'));
-			} else {
+	public function edit($id = null) {	
+		$this->VendorReview->recursive = -1;
+		$this->layout = false;
+			
+		if (! ($this->request->is('post') || $this->request->is('put')) )
+			throw new NotFoundException();
+				
+		
+		$saved_data = null;
+		$status = 200;
+		$success = 'true';
+		
+		// 	check if vendor exists
+		if (!array_key_exists('id', $this->request->data) || !$this->VendorReview->exists($id)) {
+			$status = 404;
+			$success = 'false';
+		}else{
+			// save the vendor
+			if ($this->request->is('post') || $this->request->is('put')) {
+				$saved_data = $this->VendorReview->save($this->request->data);
 			}
-		} else {
-			$options = array('conditions' => array('VendorReview.' . $this->VendorReview->primaryKey => $id));
-			$this->request->data = $this->VendorReview->find('first', $options);
 		}
-		$users = $this->VendorReview->User->find('list');
-		$vendors = $this->VendorReview->Vendor->find('list');
-		$this->set(compact('users', 'vendors'));
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status,
+			'data' => $saved_data,
+			'count' => count($saved_data)
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -84,15 +137,29 @@ class VendorReviewsController extends AppController {
  * @return void
  */
 	public function delete($id = null) {
+		$this->VendorReview->recursive = -1;
+		$this->layout = false;	
+			
 		$this->VendorReview->id = $id;
+		$status = 200;
+		$success = 'true';
+		
 		if (!$this->VendorReview->exists()) {
-			throw new NotFoundException(__('Invalid vendor review'));
+			$status = 404;
+			$success = 'false';
 		}
+		
 		$this->request->onlyAllow('post', 'delete');
-		if ($this->VendorReview->delete()) {
-			$this->flash(__('Vendor review deleted'), array('action' => 'index'));
+		if (!$this->VendorReview->delete()) {
+			$status = 500;
+			$success = 'false';
 		}
-		$this->flash(__('Vendor review was not deleted'), array('action' => 'index'));
-		$this->redirect(array('action' => 'index'));
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 }

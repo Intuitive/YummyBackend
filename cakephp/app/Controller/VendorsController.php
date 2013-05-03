@@ -47,12 +47,12 @@ class VendorsController extends AppController {
 		
 		// find by Id
 		$options = array('conditions' => array('Vendor.' . $this->Vendor->primaryKey => $id));
-		
+		$data = $this->Vendor->find('first', $options);
 		
 		$data = array(
 			'success' => 'true',
-			'data' => $this->Vendor->find('first', $options),
-			'count' => 1,
+			'data' => $data,
+			'count' => count($data),
 			'status' => $status
 		);
 		
