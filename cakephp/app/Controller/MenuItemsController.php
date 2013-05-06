@@ -8,13 +8,31 @@ App::uses('AppController', 'Controller');
 class MenuItemsController extends AppController {
 
 /**
- * index method
+ * Gets all MenuItems or all MenuItems by Vendor id
  *
  * @return void
  */
-	public function index() {
-		$this->MenuItem->recursive = 0;
-		$this->set('menuItems', $this->paginate());
+	public function index($vendorId = null) {
+		$this->MenuItem->recursive = -1;
+		$this->layout = false;
+		$menuItems;
+		
+		// get all MenuItems
+		if($vendorId == null)
+			$menuItems = $this->MenuItem->find('all');
+		// get MenuItems by Vendor id
+		else
+			$menuItems = $this->MenuItem->find('all', array(
+		        'conditions' => array('MenuItem.vendor_id =' => $vendorId)
+		    ));
+			
+		$data = array(
+			'success' => 'true',
+			'data' => $menuItems,
+			'count' => count($menuItems),
+			'code' => '200'
+		);
+		$this->set('data', $data);
 	}
 
 /**
@@ -25,11 +43,27 @@ class MenuItemsController extends AppController {
  * @return void
  */
 	public function view($id = null) {
+		$this->MenuItem->recursive = -1;
+		$this->layout = false;
+		$status = 200;
+		
+		// check if vendor exists
 		if (!$this->MenuItem->exists($id)) {
-			throw new NotFoundException(__('Invalid menu item'));
+			$status = 404;
 		}
+		
+		// find by Id
 		$options = array('conditions' => array('MenuItem.' . $this->MenuItem->primaryKey => $id));
-		$this->set('menuItem', $this->MenuItem->find('first', $options));
+		
+		
+		$data = array(
+			'success' => 'true',
+			'data' => $this->MenuItem->find('first', $options),
+			'count' => 1,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -38,15 +72,27 @@ class MenuItemsController extends AppController {
  * @return void
  */
 	public function add() {
-		if ($this->request->is('post')) {
+		$this->MenuItem->recursive = -1;
+		$this->layout = false;
+		
+		$status = 200;
+		$success = 'true';
+		
+		
+		if  ($this->request->is('post')) {
 			$this->MenuItem->create();
-			if ($this->MenuItem->save($this->request->data)) {
-				$this->flash(__('Menuitem saved.'), array('action' => 'index'));
-			} else {
+			if (!$this->MenuItem->save($this->request->data)) {
+				$status = 500;
+				$success = 'false';
 			}
 		}
-		$vendors = $this->MenuItem->Vendor->find('list');
-		$this->set(compact('vendors'));
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -56,21 +102,37 @@ class MenuItemsController extends AppController {
  * @param string $id
  * @return void
  */
-	public function edit($id = null) {
-		if (!$this->MenuItem->exists($id)) {
-			throw new NotFoundException(__('Invalid menu item'));
-		}
-		if ($this->request->is('post') || $this->request->is('put')) {
-			if ($this->MenuItem->save($this->request->data)) {
-				$this->flash(__('The menu item has been saved.'), array('action' => 'index'));
-			} else {
+	public function edit($id = null) {	
+		$this->MenuItem->recursive = -1;
+		$this->layout = false;
+			
+		if (! ($this->request->is('post') || $this->request->is('put')) )
+			throw new NotFoundException();
+				
+		
+		$saved_data = null;
+		$status = 200;
+		$success = 'true';
+		
+		// 	check if vendor exists
+		if (!array_key_exists('id', $this->request->data) || !$this->MenuItem->exists($id)) {
+			$status = 404;
+			$success = 'false';
+		}else{
+			// save the vendor
+			if ($this->request->is('post') || $this->request->is('put')) {
+				$saved_data = $this->MenuItem->save($this->request->data);
 			}
-		} else {
-			$options = array('conditions' => array('MenuItem.' . $this->MenuItem->primaryKey => $id));
-			$this->request->data = $this->MenuItem->find('first', $options);
 		}
-		$vendors = $this->MenuItem->Vendor->find('list');
-		$this->set(compact('vendors'));
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status,
+			'data' => $saved_data,
+			'count' => count($saved_data)
+		);
+		
+		$this->set('data', $data);
 	}
 
 /**
@@ -82,15 +144,29 @@ class MenuItemsController extends AppController {
  * @return void
  */
 	public function delete($id = null) {
+		$this->MenuItem->recursive = -1;
+		$this->layout = false;	
+			
 		$this->MenuItem->id = $id;
+		$status = 200;
+		$success = 'true';
+		
 		if (!$this->MenuItem->exists()) {
-			throw new NotFoundException(__('Invalid menu item'));
+			$status = 404;
+			$success = 'false';
 		}
+		
 		$this->request->onlyAllow('post', 'delete');
-		if ($this->MenuItem->delete()) {
-			$this->flash(__('Menu item deleted'), array('action' => 'index'));
+		if (!$this->MenuItem->delete()) {
+			$status = 500;
+			$success = 'false';
 		}
-		$this->flash(__('Menu item was not deleted'), array('action' => 'index'));
-		$this->redirect(array('action' => 'index'));
+		
+		$data = array(
+			'success' => $success,
+			'status' => $status
+		);
+		
+		$this->set('data', $data);
 	}
 }
