@@ -12,17 +12,33 @@ class OrdersController extends AppController {
  *
  * @return void
  */
-	public function index() {
+	public function index($vendorId = null, $userId = null, $status = null) {
 		$this->Order->recursive = -1;
 		$this->layout = false;
 		
-		$orders = $this->Order->find('all');
-		
+		if($vendorId == null)
+			$orders = $this->Order->find('all');
+		else {
+			$conditions = array();
+			if($vendorId != -1)
+				$conditions['Order.vendor_id = '] = $vendorId;
+			if($userId != -1)
+				$conditions['Order.user_id = '] = $userId;
+			if($status != -1)
+				$conditions['Order.status = '] = $status;	
+			
+			$orders = $this->Order->find('all', array(
+		        'conditions' => $conditions
+		    ));
+		}
+			
 		$data = array(
 			'success' => 'true',
 			'data' => $orders ,
 			'count' => count($orders ),
 			'code' => '200'
+			// very nice for debugging:
+			//,'conditions' => $conditions
 		);
 		$this->set('data', $data);
 	}
