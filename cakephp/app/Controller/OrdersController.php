@@ -1,5 +1,7 @@
 <?php
 App::uses('AppController', 'Controller');
+App::import('model','MenuItem');
+App::import('model','OrderItem');
 /**
  * Orders Controller
  *
@@ -12,17 +14,33 @@ class OrdersController extends AppController {
  *
  * @return void
  */
-	public function index() {
+	public function index($vendorId = null, $userId = null, $status = null) {
 		$this->Order->recursive = -1;
 		$this->layout = false;
 		
-		$orders = $this->Order->find('all');
-		
+		if($vendorId == null)
+			$orders = $this->Order->find('all');
+		else {
+			$conditions = array();
+			if($vendorId != -1)
+				$conditions['Order.vendor_id = '] = $vendorId;
+			if($userId != -1)
+				$conditions['Order.user_id = '] = $userId;
+			if($status != -1)
+				$conditions['Order.status = '] = $status;	
+			
+			$orders = $this->Order->find('all', array(
+		        'conditions' => $conditions
+		    ));
+		}
+			
 		$data = array(
 			'success' => 'true',
 			'data' => $orders ,
 			'count' => count($orders ),
 			'code' => '200'
+			// very nice for debugging:
+			//,'conditions' => $conditions
 		);
 		$this->set('data', $data);
 	}
@@ -67,27 +85,92 @@ class OrdersController extends AppController {
 		$this->Order->recursive = -1;
 		$this->layout = false;
 		
+		$this->loadModel('MenuItem');
+		$this->loadModel('OrderItem');
+		
 		$status = 200;
 		$success = 'true';
+		$returnData = null;
 		
-		// $this->Order->set($this->request->data);
-		// if($this->Order->validates())
-		// {
-			// echo "validation failed";
-			// return;
-		// }
-		
+		//print_r($this->request);
 		if  ($this->request->is('post')) {
 			$this->Order->create();
-			if (!$this->Order->save($this->request->data)) {
-				$status = 500;
-				$success = 'false';
+			
+			// for creating a single Order entity
+			if($this->request->data['app_data'] == null){
+				if (!$this->Order->save($this->request->data)) {
+					$status = 500; 
+					$success = 'false';
+				}
+			}
+			else{
+				// for creating an Order and one or more OrderItems
+				$requestData = json_decode($this->request->data['app_data'], true);
+				
+				// find a menuitem
+				$menuItemId = $requestData[0]['menuItemId'];
+				$options = array('conditions' => array('MenuItem.' . $this->MenuItem->primaryKey => $menuItemId));
+				$menuItem = $this->MenuItem->find('first', $options);
+				
+				
+				if($menuItem == null)
+				{
+					echo "No menu item found with id" . $requestData[0]['menuItemId'];
+					$data = array(
+						'success' => 'false',
+						'status' => '404'
+					);
+					
+					$this->set('data', $data);
+					return;
+				}
+				
+				// save order first
+				$order = array(
+					'user_id' => 1, 
+					'wait_time' => $menuItem['Vendor']['wait_time'],
+					'payment_method' => 1,
+					'total_price' => 0,
+					'vendor_id' => $menuItem['Vendor']['id'],
+					'date_created' => date("Y-m-d H:i:s"),
+					'status' => 0
+				);
+				$order = $this->Order->save($order);
+				
+				//then order items 
+				$totalPrice = 0;
+				
+				foreach($requestData as $orderItem) {
+					$totalPrice += $orderItem['price'];
+				    $orderItemToSave = array(
+						'order_id' => $this->Order->getLastInsertID(), 
+						'menu_item_id' => $orderItem['menuItemId'],
+						'price' => $orderItem['price'],
+						'quantity' => $orderItem['quantity'],
+						'special_instruction' => $orderItem['specialInstructions']
+					);
+					$this->OrderItem->create();
+					$this->OrderItem->save($orderItemToSave);
+				}
+				
+				// update total
+				$orderUpdateDate = array(
+					'id' => $this->Order->getLastInsertID(),
+					'total_price' => $totalPrice
+				);
+				$this->Order->save($orderUpdateDate);
 			}
 		}
 		
+		
+		$order['total_price'] = $totalPrice;
+		$order['id'] = $this->Order->getLastInsertID();
+		
 		$data = array(
-			'success' => $success,
-			'status' => $status
+			'success' => 'true',
+			'status' => $status,
+			'data' => $order,
+			'count' => '1'
 		);
 		
 		$this->set('data', $data);
