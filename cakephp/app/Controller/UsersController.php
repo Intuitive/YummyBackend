@@ -36,24 +36,33 @@ class UsersController extends AppController {
  * @param string $id
  * @return void
  */
-	public function view($id = null) {
+	public function view($id = null, $username = null) {
 		$this->User->recursive = -1;
 		$this->layout = false;
 		$status = 200;
+		$data = null;
 		
-		// check if user exists
-		if (!$this->User->exists($id)) {
-			$status = 404;
+		if($username == null){
+			// check if user exists
+			if (!$this->User->exists($id)) {
+				$status = 404;
+			}
+			
+			// find by Id
+			$options = array('conditions' => array('User.' . $this->User->primaryKey => $id));
+			$data = $this->User->find('first', $options);		
 		}
-		
-		// find by Id
-		$options = array('conditions' => array('User.' . $this->User->primaryKey => $id));
-		
-		
+		else{
+			// find by username
+			$options = array('conditions' => array('User.username = ' => $username));
+			$data = $this->User->find('first', $options);
+			if(count($data) == 0) $status = 404;
+		}
+
 		$data = array(
 			'success' => 'true',
-			'data' => $this->User->find('first', $options),
-			'count' => 1,
+			'data' => $data,
+			'count' => $data == null ? 0 : count($data),
 			'status' => $status
 		);
 		

@@ -17,74 +17,13 @@ class Order extends AppModel {
 	public $useDbConfig = 'Yummy';
 
 /**
- * Validation rules
+ * Display field
  *
- * @var array
+ * @var string
  */
- /*
-	public $validate = array(
-		'id' => array(
-			'naturalnumber' => array(
-				'rule' => array('naturalnumber'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
-		'user_id' => array(
-			'naturalnumber' => array(
-				'rule' => array('naturalnumber'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
-		'wait_time' => array(
-			'naturalnumber' => array(
-				'rule' => array('naturalnumber'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
-		'payment_method' => array(
-			'naturalnumber' => array(
-				'rule' => array('naturalnumber'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
-		'total_price' => array(
-			'money' => array(
-				'rule' => array('money'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
-		'vendor_id' => array(
-			'naturalnumber' => array(
-				'rule' => array('naturalnumber'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
-	);
-*/
+	public $displayField = 'user_id';
+
+
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
 
 /**
