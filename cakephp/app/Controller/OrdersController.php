@@ -56,6 +56,7 @@ class OrdersController extends AppController {
 		$this->Order->recursive = -1;
 		$this->layout = false;
 		$status = 200;
+		date_default_timezone_set('UTC');
 		
 		// check if order exists
 		if (!$this->Order->exists($id)) {
@@ -91,6 +92,9 @@ class OrdersController extends AppController {
 		$status = 200;
 		$success = 'true';
 		$returnData = null;
+		
+		// set timezone to GMT
+		date_default_timezone_set('UTC');
 		
 		//print_r($this->request);
 		if  ($this->request->is('post')) {
@@ -145,9 +149,10 @@ class OrdersController extends AppController {
 				    $orderItemToSave = array(
 						'order_id' => $this->Order->getLastInsertID(), 
 						'menu_item_id' => $orderItem['menuItemId'],
+						'name' => $orderItem['name'],
 						'price' => $orderItem['price'],
 						'quantity' => $orderItem['quantity'],
-						'special_instruction' => $orderItem['specialInstructions']
+						'special_instructions' => $orderItem['specialInstructions']
 					);
 					$this->OrderItem->create();
 					$this->OrderItem->save($orderItemToSave);
