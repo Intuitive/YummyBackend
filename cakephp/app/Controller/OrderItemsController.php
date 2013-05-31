@@ -12,9 +12,28 @@ class OrderItemsController extends AppController {
  *
  * @return void
  */
-	public function index() {
-		$this->OrderItem->recursive = 0;
-		$this->set('orderItems', $this->paginate());
+	public function index($orderId = null) {
+		$this->OrderItem->recursive = -1;
+		$this->layout = false;
+		$orderItems;
+		
+		// get all OrderItems
+		if($orderId == null)
+			$orderItems = $this->OrderItem->find('all');
+		
+		// get MenuItems by Vendor id
+		else
+			$orderItems = $this->OrderItem->find('all', array(
+		        'conditions' => array('OrderItem.order_id =' => $orderId)
+		    ));
+			
+		$data = array(
+			'success' => 'true',
+			'data' => $orderItems,
+			'count' => count($orderItems),
+			'code' => '200'
+		);
+		$this->set('data', $data);
 	}
 
 /**
